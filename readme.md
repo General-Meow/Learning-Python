@@ -4,6 +4,8 @@
 - installing python 3, you'll get the python interperator, the python shell which is a REPL as well as the in built IDE called IDLE
 - you start IDLE by just running idle and using the file menu you create a new file
 - you press `F5` to save and run the application
+- You can start the REPL by using the command `python3`
+  - exit by using the `quit()` command
 - variables are defined without any keyword and assignment is done with an equals operator
 - variable types are inferred by its initialized value
 
@@ -117,7 +119,14 @@ list_of_five = list(range(5))
 - variables are dynamic and they infer their types during initilization
 - variables can be redefined to a different type
 - there are numbers, strings, booleans and Objects
+- strings are defined with single quotes, double quotes and tripple quotes
+- tripple quotes are used as `docstrings` to describe a function as a "standard"
+- you can choose either single or double but you should be consistent
+- you should check out Pep's (Pep8) to the style guide https://www.python.org/dev/peps/pep-0008/ also PEP 257 about docstrings
 - booleans are `True` and `False` the capitalization is important there
+- Every object in python can have a truth value associated with it (much like javascript)
+- Objects are false when it is, `0`, `None`, empty string, empty data structure (list, tuple, map etc) everything else is true
+- use the function `bool()` to create booleans `bool(0)`, `bool('')`, `bool({})` etc
 - everything is basically an object (string, numbers, functions, modules)
 - Python is `Object Based` and not purely `Object oriented`
 
@@ -190,6 +199,7 @@ my_dictionary =
 }
 ```
 - An empty dictionary literal looks like `myVal = {}`
+- You can also use the built in function (BIF) `dict()` to create a dictionary
 - Dictionary's support bracket notation for both accessing the values AND setting them
 
 ```python
@@ -255,11 +265,12 @@ myMapCounters.setdefault('myKey', 0) #set a default value if the key isnt there
 myMapCounters['myKey'] += 1
 ```
 - Sets are data structures that dont allow duplicates
+  - you can create sets with the BIF `set()`
   - they are faster than lists in terms of lookups as lists use sequential lookups
   - insertion order is not maintained
   - literal sets are created with a sequence of items, separated by commas around curly braces
   - sets provide maths like operations `difference`, `union`, `intersection`
-  - you can convert a set into a list by using the `list` function
+  - you can convert a set into a list by using the `list()` function
 ```python
 mySet = {'a value', 'another value', 'some other value'}
 #sort hand if you want a set of individual characters from a String
@@ -282,6 +293,7 @@ anotherDiff = someEvens.difference(evens) #will return empty set as evens contai
 intersection = evens.intersection(someEvens) #returns a set of 4 and 6
 ```
 - Tuples are a little like lists
+  - can be created using the BIF `tuple()`
   - they keep their insertion order
   - they are immutable
   - tuple literals are created with a sequences of items, separated by commas between parenthesis
@@ -305,4 +317,272 @@ import pprint
 pprint.pprint(mydict)
 ```
 - if you've got a dictionary in a dictionary, when you want to access the nested dictionary, you use the double square bracket notation
-- `myOuterDict['outerKey']['innerDictKey']
+- `myOuterDict['outerKey']['innerDictKey']`
+
+
+##### Chapter 4 - Functions and modules
+- code resuse is done by using methods/functions, modules and the standard library
+- functions are apart of modules and modules are part of the standard library
+- functions are defined with the `def` keyword
+- values are returned from functions using the `return` keyword
+- function comments are created using the tripple String syntax `"""a comment goes here"""` and these are used to describe the function, much like javadoc - also known as a docstring
+- one line comments are created using the hash `#` character
+- functions can take zero or more parameters
+- functions can have multiple return statements
+- if you want to return more than one item, you can use the build in data structures or your own types
+- after the function parenthesis, you must provide a colon `:`
+- functions are known as `functions` when they are not defined within a class but within a class they are known as `methods`
+
+```python
+def this_is_a_function(argument1, argument2):
+  """this is the standard way to define a function comment, eventhough tripple quotes return a multiline string"""
+  #this is how you define a single line comment
+  return argument1 #this is how to return a value
+```
+- as python treats everything as Objects, you do not need to declare the parameters types like in some languages
+- To make things readable, you can use function annotations, these will indicate what functions take as argument types and what they return
+- this helps the developer so that they do not need to read the functions code
+- function argument annotations takes the form `...(argument:type)`
+- the function return type annotation takes the form `...() -> type:`
+
+```python
+def this_is_a_function(argument1:str, argument2:str) -> str:
+  """this is the standard way to define a function comment, eventhough tripple quotes return a multiline string"""
+  #this is how you define a single line comment
+  return argument1 #this is how to return a value
+
+```
+- The Python interperator doesn't use the types to validate your code
+- You can define functions that take arguments that have default values when you dont provide the param
+- if you call the following function like `my_function()` you will get  'the argument provided is: the default value'
+
+```python
+def my_function(argyment:str='my default value') ->str:
+  return 'the argument provided is: ' + argument
+```
+- when calling a function with arguments, you typically use positional assignment
+  - this means that the first provided argument maps to the first argument in the function etc
+  - in other words, the order of the arguments matter
+- python also support `keyword assignment` which means you can call the function with arguments in any order but you must state what argument should be assigned to which function argument
+
+```python
+def my_function(name:str, age:int) -> None:
+  print(name + " is " + age)
+
+my_function(age=7, name='Jenson')
+```
+- To define a module, you just create a python file with multiple functions defined
+- To use the module, you need to import it using the `import` keyword but to import it the interpertor looks in the `search path`
+- You must make sure that the module file only has function definitions and no calls to those functions. This is because when you import them, any invocation will be triggered
+- The search path consists of 3 areas of a machine
+  - The current working directory
+  - site-packages location
+    - this is where custom/third party packages
+  - standard library locations
+- Sometimes the second and third locations may be searched out of order
+- To install a module into the site-packages, you need to build it into the correct format called a `distribution package`
+  - To build you need to use the tool `setuptools` which comes with python 3.4
+  - You need to do 3 things
+    - The module file itself, the file that contains all the shared functions
+    - Distribution description is required that contains information about your distribution package. this is a file called `setup.py` and lives in the same directory as your module file
+    - it contains 2 lines the import of the tool and the invokation with 2 main properties, the name and the py_modules
+    
+```python
+from setuptools import setup
+setup(
+name='vsearch',
+version='1.0',
+description='The Head First Python Search Tools',
+author='HF Python 2e',
+author_email='hfpy2e@gmail.com',
+url='headfirstlabs.com',
+py_modules=['vsearch'],
+)
+```
+    - And lastly a `README.txt` that contains a description of what this module does. but this can be left empty
+- With the 3 files in place, you can create the distribution with the following command on mac `python3 setyp.py sdist` sdist mean source distribution
+- This will create a vsearch-1.0.tar.gz file in the dist directory
+- To install this file into the site-packages, you will need to use `PIP` e.g. `python3 -m pip install vsearch-1.0.tar.gz`
+- With it now installed in your site packages, the functions within it can be used in any python program we write
+- To share, you can distribute the compressed file or you can push it to pythons central repo `PyPI` (pie-pee-eye) https://pypi.org/
+
+- Function arguments
+- Python supports whats is known as 'by-object-reference call semantics' which means it supports both call by value (copy sent to argument) and call by refernce.
+- Depending on the value being sent, it'll choose one of the options
+- If you send a `mutable` object, then `call-by-reference` is used 
+  - So things like Lists, Sets and Dictionairies will be referenced, so changes to those within a method will change the original copy
+- If you send an `immutable` object it'll use `call-by-value`
+  - String, Integers and Tuples are copied to the functions
+
+  - pytest is one of the most used testing frameworks
+  - it has a plugin architecture
+  - you can add the `pep8` plugin to test your code against pep8 compliance
+  - You'll need to install pytest and the pip8 plugin using `pep`
+  - `pip3 install pytest`
+  - `pip3 install pytest-pep8`
+  - To run pytest run `py.test` and to check a file for compliance use `py.test --pep8 FILENAME`
+
+
+##### Chapter 5 - Webapp using Flask
+- To use flask, you need to install flask into the environment using pip `pip3 search flask` and `pip3 install flask`
+- You can use pypi.python.org to find modules that you can install
+- to use flash, you use the `flask` module and import the `Flask` class `from flask import Flask`
+
+```python
+from flask import Flask
+app = Flask(__name__)  #create an instance of Flash using the dunder name
+
+@app.route('/') #decorator adds the homepage method with a GET route
+def homepage() -> str:
+    return 'hello'
+app.run() #start the app
+```
+- By default, the route decorator uses the GET request method
+- You can change this or even add more methods by providing the `methods` list attribute e.g. `@app.route('/', methods=['GET','POST'])
+- You can have multiple decorators applied to a method (multiple app.routes using different urls)
+- Start the application with the python3 command `python3 helloWorld.py
+- The `app.run()` method call executes the application in a web container, you can add the `debug` attribute to allow for on the fly reload e.g. `app.run(debug=True)`
+- templates and static folder need to be under the webapp directory
+- templates directory holds the html while static typically has the css
+- the webapp directory holds the python script with Flash definitions
+- Flask templates use jinja2 which looks like mustache
+- Jinja has a base template then other templates extend it filling out jinja2 directives with just content
+- The following is the base.html
+
+```html
+<!doctype html>
+<html>
+    <head>
+        <title>{{ the_title }}</title>
+        <link rel="stylesheet" href="static/hf.css" />
+    </head>
+    <body>
+        {% block body %}
+
+        {% endblock %}
+    </body>
+</html>
+```
+
+```html
+{% extends 'base.html' %}
+{% block body %}
+<h2>{{ the_title }}</h2>
+<form method='POST' action='/search4'>
+    <table>
+        <p>Use this form to submit a search request:</p>
+        <tr><td>Phrase:</td><td><input name='phrase' type='TEXT' width='60'></td></tr>
+        <tr><td>Letters:</td><td><input name='letters' type='TEXT' value='aeiou'></td></tr>
+    </table>
+<p>When you're ready, click this button:</p>
+<p><input value='Do it!' type='SUBMIT'></p>
+</form>
+{% endblock %}
+```
+
+- the content in the base template with the directives `{% block body %}` and `{% endblock %}` will be replaced by the inherited content
+- To show html content, you'll need to have a method that returns `html` types and use the `render_template` method and provide it with the template and properties on the template that need to be replaced
+
+```python
+from flask import Flask, render_template
+...
+@app.route('/render')
+def render_example() -> 'html':
+    return render_template('firstPage.html', title='this is a dynamic title')
+```
+
+- To get posted form parameters you need to use the `request` object
+- `from flask import Flask, request`
+- The request object has the `form` object that supports bracket notation to get the submited values `request.form['param']`
+- Decorated methods can return 'html', 'str' or http codes e.g. '302' for redirect
+- To trigger a browser redirect, import the redirect method from the flask module and return the result of it `return redirect('/the_other_url')`
+- When replying to a request, if the response has html tags, they may get ignored if they are invalid tags.
+  - If you want these tags to be displayed, you would need to escape them
+  - To escape html tags, you can use the escape function from the `flask` module
+
+```python
+from flask import Flask, escape
+
+def some_endpoint(req:'flask_request', res:str) -> str:
+  return escape("<blah>xxx</blah>")
+```
+- The flask request object contains may attributes and methods, you can use the `dir` function on those objects to get the objects attributes and methods
+  - most of the time, you'd need to `form`, `user-agent` and `remote_addr` attributes on the request
+- If your using a PAAS or something that will run you code, you may need to not call the running of the code (in this case the `app.run()`)
+    - When your in this situation, you could choose to delete the `app.run()` line or do something better
+    - Instead use the `dunder name` (__name__) method (the interpreator maintains the initialization and its value and its always the current namespace)
+    - if you import a module with `__name__` its value will be the name of the module
+- To selectively run the app depending on where you run it, you use the `dunder name dunder main` pattern
+
+```python
+if __name__ == '__main__':
+  app.run()
+```
+
+##### Chapter 6 - Saving data
+- To open a file on the filesystem, you use the `open` function, it takes 2 params, a filename and a mode (append/read only/write etc)
+  - eg. `todos = open('myTodos.txt', 'a')`
+  - You can assign the result of the open function call to a variable, which returns a filestream
+  - You can write to the file using the `print` function with an additional 'file' parameter eg. print('my text to write', file=todos)
+  - `print` also allows you to define the `end` character that's appended to the the value you supply. The default value is a new line character
+  - `print` also allows you to define the `seperator` character between a list of strings eg. `print(str1, str2, str3, sep='|')`
+  - To should close the filestream when your done or you could lose data `todo.close()`
+  - If you do not provide a mode while opening a file, it's open it in the default readonly mode
+  - while a variable is assigned to the filestream, you can use it to print each line of the file
+  - The file is made in the same location (pwd) or the main function
+```python
+tasks = open('file.txt')
+
+for task in tasks:
+    print(task)
+tasks.close()
+```
+
+- A better way of using files is to use the `with` statement
+
+```python
+with open('myTodos.txt') as todos:
+    for todo in todos:
+        print(todo, end='')
+```
+
+```python
+with open('myTodos.txt') as todos:
+    todo = todos.read() #can also use readlines() which reads all contents into a list
+return todo
+```
+- The reason why this one is better is because using `with` automatically closes the filestream when you leave the suite
+- The `with` statement conforms to something called to `context management protocol`
+  - this allows python to manage the context within the suite allowing the interprator to automatically clean up by calling `close` for you
+- When reading strings from a file that has been delimited, you can split the string to a list again using the strings `split` function eg. "string".split("|")
+- jinja2 template to iterate over a list of lists
+
+```html
+{% extends base.html %}
+    {% block body %}
+        <h2> {{ title }}</h2>
+        <table>
+            <tr>
+            {% for header in headers %}
+                <th>{{ header }}</th>
+            {% endfor %}
+            </tr>
+            {% for row in all_data %}
+            <tr>
+                {% for row_item in row %}
+                <td>{{ row_item }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+
+{% endblock %}
+```
+
+
+
+
+
+
+
+
