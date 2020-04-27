@@ -23,7 +23,9 @@ my_arr_of_numbers = [1, 2, 3, 4, 5]
 - `suites` are defined without curly braces but with indentations and preceded by a colon `:`
 
 ```python
-if my_var == 'hello'
+my_var = ''
+if my_var == 'hello':
+    pass
 ```
 - python comes with many `modules` that allow you to import functionality into an application
 - these `modules` contain `submodules` or `functions` that can also be imported individually
@@ -91,11 +93,11 @@ for i in [1, 2, 3, 4, 5]:
   print(i)
 
 #over a string
-for ch in "hello this is a string"
+for ch in "hello this is a string":
   print(ch)
 
 #over a fixed amount of times
-for i in range(5)
+for i in range(5):
   print('hello')
 ```
 - range is actually a function that will return an array of integers from 1 to the number provided
@@ -579,10 +581,146 @@ return todo
 {% endblock %}
 ```
 
+##### Chapter 7 - Using databases
+- The DB-API is build into the standard library that allows you to connect and query a DB
+- The DB-API is an abstraction above the DB driver that allows you to generically use any relational database without worry which one
+- The MySql database driver needs to be install manually by downloading the driver and following the instructions to install it
+- There are other DB drivers for MySql that you can also use
+- Once Mysql is installed with the accompanying driver, you can connect to it using the `mysql.connector` and `cursor`
 
+```python
+import mysql.connector
+dbconfig = {
+    'host': 'localhost',
+    'user': 'vserch',
+    'password': 'mypassword',
+    'database': 'vserdatabase',}
+conn = mysql.connector.connect(**dbconfig)
 
+cursor = conn.cursor()
+query = """show tables;"""
+cursor.execute(query)
+result = cursor.fetchall()
+print(result)
 
+#the result returned is always a list of tuples so it might be better to iterate and print each tuple
+for row in result:
+    print(row)
+```
+- The `**` syntax means that the variable provided gets expanded, in this case, the dict gets split into 4 different variables all being sent to the connect method
+- When executing a query with a cursor, you have to retrieve the results using one of three methods
+  - fetchone: returns one row of results
+  - fetchmany: returns the specified rows of results
+  - fetchall: returns all of the results 
+- When writing a query that inserts, you would again use the execute method but write the insert with `data placeholders` and a set of values to replace them with
 
+```python
+import mysql.connector
+my_creds = {'':'',} #fill this out
+
+conn = mysql.connector.connect(**my_creds)
+cursor = conn.cursor()
+sql_insert = """insert into myTable (id, some_col, another_col) 
+values
+(%s, %s, %s)
+"""
+result = cursor.execute(sql_insert, (1, 'value1', 'value2'))
+```
+- By default, data is held in cache and doesn't always write to the table right away, to ensure that it gets written, you call the connections commit method `conn.commit()`
+- Once you have finished querying, you should close your connection and cursor
+
+```python
+...
+cursor.close()
+conn.close()
+```
+- It would be ideal if we could use the `with x as var` syntax like when we were opening and processing files
+  - Its possible to do this with databases/cursors but we'll need to use Classes
+  
+##### Chapter 8 - Classes
+- To use the `with` syntax that manages resources you'll need to create classes
+- Classes that implement the `Context Management Protocol` can hook into the `with` syntax
+- Classes have `methods` and `attributes`
+- Just like in other OOP, you instantiate instances of a class to create objects
+- To create a class...
+
+```python
+class MyClassName:
+    pass
+```
+- The `pass` keyword above is used in methods and classes to define a class/method that is empty. Without it, the interperator wouldn't know if you've ended the method correctly
+- To instantiate an object from a class you call the class with parentheses
+
+```python
+class MyClass:
+    pass
+
+myVariable = MyClass()
+anotherInstance = MyClass()
+```
+- By convention, functions should be named with lowercase and underscores while classes use camel case, this is so that you can tell at a glance if your calling a class or function
+- Methods are called using dot notation followed by the method name and brackets
+- When you call a method, the interperator inverts it to call the method on the class with the instance as a parameter
+
+```python
+class MyClassName:
+    pass
+
+a = MyClassName()
+a.callMethod()
+#this gets converted to the following but no one really writes code this way
+MyClassName.callMethod(a)
+```
+- this means that every method you define MUST have at least one parameter, with that first parameter being the class type and must be called `self`
+- This means that self is always assigned the variable value automatically
+- If you don't define the method with the mandatory param, the interperator will error
+- The keyword `self` is just like the keyword `this` from other languages
+
+```python
+class MyCounter:
+    def inc(self) -> None:
+        self.value += self.increaments
+```
+- Just like in other OOP languages, methods have scopes, so any variable defined within the method will be destroyed when out of scope
+- So you must use the self param to store/access object attributes
+- Variables need to be initialized before you can use them
+- In Python the interpretor deals with instanciation while the `__init__` dunder init function deals with initialization
+- All classes automatically inherit from the Object class where a lot of dunder functions reside.
+  - These dunder functions provide hooks into a classes standard behaviour
+  - These can be overridden
+  - methods such as the `__eq__`, `__ge__` are like the Java equals method/greater than
+  - The dunders from the Object class are also known as `the magic methods`
+  - Object properties/attributes can be accessed directly without getters/setters - its like they are public
+- The `__init__` function is what is typically the Constructor of a class
+- An example of the `__init__` that intializes class attributes
+```python
+class MyIncClass:
+    def __init__(self, start: int=0, step: int=1) -> None :
+        self.value = start
+        self.step = step
+    def inc(self) -> None :
+        self.value += self.step
+
+a = MyIncClass(0, 10)
+a.inc()
+```
+
+- This example shows a class with an dunder init that takes two params or these can be ignored and default values are provided
+- The BIF `type()` can be used on an object to get the object type information
+- Other BIF's are `id()` and `hex()` which returns the memory address id of an object, and a hex presentation of a number
+- When you print an object, it'll run the `__repr__` dunder (which is just like the toString() method) which prints the class name and memory hex address
+  - Override this dunder if you want something more nicer
+
+```python
+def __repr__(self) -> str:
+  str(self.value)
+```
+
+##### Chapter 9 - With statement
+- To be a class that adheres to the `Context management protocol` you must provide two methods
+  - `__init__` dunder init is optional but with all classes, its used to initialize class properties. this runs before anything
+  - `__enter__` dunder enter runs before you enter the `with` suite, this can (but doesn't have to) return a value. this runs right after init
+  - `__exit__` dunder exit runs once you exit the `with` suite or when an exception occurs within the suite
 
 
 
